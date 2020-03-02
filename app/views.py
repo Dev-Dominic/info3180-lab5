@@ -31,23 +31,25 @@ def about():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
-    if request.method == "POST":
-        # change this to actually validate the entire form submission
-        # and not just one field
+    if request.method == "POST" and form.validte_on_submit():
+
         if form.username.data:
-            # Get the username and password values from the form.
+            # Username and Password from login form
+            loginUsername = request.form['username']
+            loginPassword = request.form['password']
 
-            # using your model, query database for a user based on the username
-            # and password submitted. Remember you need to compare the password hash.
-            # You will need to import the appropriate function to do so.
-            # Then store the result of that query to a `user` variable so it can be
-            # passed to the login_user() method below.
+            user = UserProfile.query.filter_by(username=username) 
+            if user is None and not check_password_hash(user.password, password): 
+                flash("Username or Password incorrect", "danger")
+                return redirect(url_for('login'))
+            
+            # Loading user session if credentials are valid
+            login_user(user) 
 
-            # get user id, load into session
-            login_user(user)
+            # Redirect to a secure-page
+            flash("Logged in Successfully", "success")
+            return redirect(url_for("secure-page"))  
 
-            # remember to flash a message to the user
-            return redirect(url_for("home"))  # they should be redirected to a secure-page route instead
     return render_template("login.html", form=form)
 
 
